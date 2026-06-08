@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cofun · 广告管理平台</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── 设计系统 ── */
+:root {
+  --bg:        #070c14;
+  --s0:        #0d1117;
+  --s1:        #161b22;
+  --s2:        #1c2333;
+  --s3:        #21262d;
+  --border:    #30363d;
+  --border2:   #21262d;
+  --text:      #e6edf3;
+  --muted:     #7d8590;
+  --muted2:    #555f6d;
+  --blue:      #4493f8;
+  --blue2:     #1f6feb;
+  --green:     #3fb950;
+  --orange:    #e3a430;
+  --red:       #f85149;
+  --purple:    #a371f7;
+  --teal:      #2ea8a0;
+  --panel-w:   340px;
+  --header-h:  56px;
+  --alert-h:   56px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ══════════════════════════════
+   HEADER
+══════════════════════════════ */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--header-h);
+  background: rgba(7, 12, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px;
+  gap: 0;
+}
+.h-brand {
+  display: flex; align-items: center; gap: 10px;
+  padding-right: 20px;
+  border-right: 1px solid var(--border2);
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+.h-logo {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #4493f8, #a371f7);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; color: #fff;
+}
+.h-brand-name { font-size: 14px; font-weight: 700; }
+.h-brand-sub   { font-size: 11px; color: var(--muted); }
+.h-tabs { display: flex; gap: 2px; flex: 1; }
+.h-tab {
+  padding: 6px 16px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  transition: all .15s; position: relative;
+}
+.h-tab:hover { color: var(--text); background: var(--s2); }
+.h-tab.active {
+  color: var(--text);
+  background: var(--s1);
+}
+.h-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 8px; right: 8px;
+  height: 2px; background: var(--blue); border-radius: 1px;
+}
+.h-right {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto; flex-shrink: 0;
+}
+.h-pill {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 11px; color: var(--muted);
+  display: flex; align-items: center; gap: 5px;
+}
+.h-pill.active-chip { color: var(--blue); border-color: rgba(68,147,248,.3); }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ══════════════════════════════
+   ALERT BAR
+══════════════════════════════ */
+.alert-bar {
+  position: fixed;
+  top: calc(var(--header-h) + var(--brand-bar-h)); left: 0;
+  right: var(--panel-w);
+  z-index: 150;
+  display: flex; gap: 0;
+  background: var(--s0);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  padding: 0 20px;
+  height: var(--alert-h);
+  align-items: center;
+  gap: 10px;
+}
+.alert-bar::-webkit-scrollbar { height: 0; }
+.alert-card {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 12px; white-space: nowrap;
+  border: 1px solid;
+  flex-shrink: 0;
+  cursor: default;
+  transition: filter .15s;
+}
+.alert-card:hover { filter: brightness(1.15); }
+.alert-card.red    { background: rgba(248,81,73,.08); border-color: rgba(248,81,73,.3); color: #ff8080; }
+.alert-card.orange { background: rgba(227,164,48,.08); border-color: rgba(227,164,48,.3); color: #f0b860; }
+.alert-card.green  { background: rgba(63,185,80,.08);  border-color: rgba(63,185,80,.3);  color: #5cde6e; }
+.alert-icon { font-size: 14px; }
+.alert-label { font-weight: 600; }
+.alert-desc  { color: inherit; opacity: .75; margin-left: 2px; }
+
+/* ══════════════════════════════
+   APP BODY
+══════════════════════════════ */
+:root {
+  --brand-bar-h: 44px;
+}
+.app-body {
+  display: flex;
+  margin-top: calc(var(--header-h) + var(--brand-bar-h) + var(--alert-h));
+  min-height: calc(100vh - var(--header-h) - var(--brand-bar-h) - var(--alert-h));
+}
+.main-area {
+  flex: 1;
+  padding: 20px 20px 40px;
+  overflow-y: auto;
+  min-width: 0;
+  margin-right: var(--panel-w);
+}
+
+/* ── Tab Panels ── */
+.tab-panel { display: none; animation: fadeIn .2s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Section label ── */
+.sec {
+  font-size: 11px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+  margin: 20px 0 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sec::after { content:''; flex:1; height:1px; background:var(--border2); }
+.sec:first-child { margin-top: 0; }
+
+/* ══════════════════════════════
+   KPI CARDS
+══════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.kpi {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  position: relative; overflow: hidden;
+  transition: border-color .15s, transform .15s;
+}
+.kpi:hover { border-color: var(--border2); transform: translateY(-1px); }
+.kpi::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  border-radius: 10px 10px 0 0;
+}
+.kpi.blue::before   { background: var(--blue); }
+.kpi.green::before  { background: var(--green); }
+.kpi.orange::before { background: var(--orange); }
+.kpi.purple::before { background: var(--purple); }
+.kpi.teal::before   { background: var(--teal); }
+.kpi.red::before    { background: var(--red); }
+.kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; line-height: 1.3; }
+.kpi-spark { flex-shrink: 0; }
+.kpi-val { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
+.kpi-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+.kpi-sub { font-size: 10px; color: var(--muted); }
+.kpi-trend { font-size: 11px; font-weight: 600; }
+.kpi-trend.up   { color: var(--green); }
+.kpi-trend.down { color: var(--red); }
+.kpi-trend.neu  { color: var(--muted); }
+
+/* ══════════════════════════════
+   CHARTS
+══════════════════════════════ */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.card-head { margin-bottom: 14px; }
+.card-title { font-size: 13px; font-weight: 600; }
+.card-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.chart-wrap { position: relative; }
+.chart-wrap.h260 { height: 260px; }
+.chart-wrap.h220 { height: 220px; }
+
+/* ── Market summary cards ── */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1400px) {
+  .market-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.mkt-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+  border-top: 2px solid;
+}
+.mkt-card.uk { border-top-color: var(--blue); }
+.mkt-card.eu { border-top-color: var(--purple); }
+.mkt-card.de { border-top-color: var(--purple); }
+.mkt-card.ca { border-top-color: var(--green); }
+.mkt-card.us { border-top-color: var(--orange); }
+
+/* ── Brand selector ── */
+.brand-bar {
+  position: fixed;
+  top: var(--header-h); left: 0; right: 0;
+  z-index: 160;
+  height: 44px;
+  background: var(--s0);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 6px;
+}
+.brand-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all .15s; cursor: pointer;
+}
+.brand-tab:hover { background: var(--s2); color: var(--text); }
+.brand-tab.active {
+  background: var(--s2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.brand-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.brand-dot.duhouse  { background: var(--blue); }
+.brand-dot.coferset { background: var(--orange); }
+.brand-dot.daillshop{ background: var(--purple); }
+.brand-mkts { font-size:10px; color:var(--muted); font-weight:400; }
+.brand-badge {
+  font-size:9px; padding:1px 6px; border-radius:10px; font-weight:600;
+}
+.brand-badge.pending  { background:rgba(227,164,48,.15); color:var(--orange); }
+.brand-badge.disabled { background:rgba(248,81,73,.1); color:#f85149; }
+
+/* ── Brand views ── */
+.brand-view { display:none; }
+.brand-view.active { display:block; }
+
+/* Pending / disabled state cards */
+.state-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 40px 32px;
+  text-align: center; margin-top: 20px;
+}
+.state-icon { font-size: 48px; margin-bottom: 16px; }
+.state-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.state-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin: 0 auto 20px; }
+.state-pills { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+.state-pill {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 14px;
+  font-size: 12px; color: var(--muted);
+}
+.state-btn {
+  display: inline-block;
+  background: var(--blue2); border-radius: 8px;
+  padding: 9px 24px; font-size: 13px; font-weight: 600;
+  color: #fff; cursor: pointer;
+  transition: background .12s;
+}
+.state-btn:hover { background: #2871d6; }
+.state-btn.warn { background: rgba(227,164,48,.15); border: 1px solid rgba(227,164,48,.4); color: var(--orange); }
+.state-btn.warn:hover { background: rgba(227,164,48,.25); }
+
+/* Campaign count pills in brand bar */
+.brand-count {
+  font-size:9px; padding:1px 7px; border-radius:10px;
+  background:var(--s3); color:var(--muted); margin-left:2px;
+}
+.mkt-head {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 14px;
+}
+.mkt-name { font-size: 14px; font-weight: 700; }
+.mkt-rows  {}
+.mkt-row {
+  display: flex; justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border2);
+  font-size: 12px;
+}
+.mkt-row:last-child { border-bottom: none; }
+.mkt-row-l { color: var(--muted); }
+.mkt-row-r { font-weight: 500; font-variant-numeric: tabular-nums; }
+.mkt-bar-row { margin: 10px 0 6px; }
+.bar-bg { height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width .8s ease; }
+
+/* ══════════════════════════════
+   CAMPAIGN TABLE
+══════════════════════════════ */
+.tbl-controls {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.tbl-search {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  color: var(--text); font-size: 12px; outline: none;
+  width: 220px;
+}
+.tbl-search::placeholder { color: var(--muted2); }
+.tbl-search:focus { border-color: var(--blue2); }
+.filter-btn {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 12px;
+  font-size: 12px; color: var(--muted);
+  transition: all .12s;
+}
+.filter-btn:hover, .filter-btn.on {
+  background: rgba(68,147,248,.12);
+  border-color: rgba(68,147,248,.4);
+  color: var(--blue);
+}
+.tbl-sep { flex: 1; }
+.tbl-count { font-size: 11px; color: var(--muted); }
+
+.tbl-wrap { overflow-x: auto; border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+thead th {
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .6px;
+  text-align: left; padding: 8px 14px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+thead th:first-child { border-radius: 8px 0 0 0; }
+thead th:last-child  { border-radius: 0 8px 0 0; }
+thead th.r { text-align: right; }
+thead th.c { text-align: center; }
+thead th.sortable { cursor: pointer; }
+thead th.sortable:hover { color: var(--text); }
+tbody tr {
+  border-bottom: 1px solid rgba(48,54,61,.4);
+  transition: background .1s;
+}
+tbody tr:hover { background: rgba(28,35,51,.6); }
+tbody tr:last-child { border-bottom: none; }
+tbody td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
+tbody td.r { text-align: right; font-variant-numeric: tabular-nums; }
+tbody td.c { text-align: center; }
+
+.health-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 4px; vertical-align: middle;
+  flex-shrink: 0;
+}
+.cname-cell { display: flex; align-items: center; gap: 0; }
+.cname { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.acos-cell-inner { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.mini-bar { width: 44px; height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.mini-bar-fill { height: 100%; border-radius: 2px; }
+
+.badge {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 10px; display: inline-block;
+  white-space: nowrap;
+}
+.b-scale  { background: rgba(63,185,80,.15);  color: var(--green); }
+.b-keep   { background: rgba(68,147,248,.12); color: var(--blue); }
+.b-opt    { background: rgba(163,113,247,.12); color: var(--purple); }
+.b-lower  { background: rgba(227,164,48,.12); color: var(--orange); }
+.b-pause  { background: rgba(248,81,73,.12);  color: var(--red); }
+
+/* health status color helpers */
+.c-green  { color: var(--green); }
+.c-blue   { color: var(--blue); }
+.c-orange { color: var(--orange); }
+.c-red    { color: var(--red); }
+.c-purple { color: var(--purple); }
+.c-teal   { color: var(--teal); }
+.c-muted  { color: var(--muted); }
+
+/* ── Campaign management toolbar ── */
+.mgmt-summary {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+.mgmt-box {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+  text-align: center;
+}
+.mgmt-num  { font-size: 22px; font-weight: 700; }
+.mgmt-lbl  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* ══════════════════════════════
+   STRATEGY PANEL
+══════════════════════════════ */
+.strategy-panel {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  width: var(--panel-w);
+  bottom: 0;
+  background: var(--s0);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 100;
+  overflow: hidden;
+}
+.sp-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sp-title { font-size: 13px; font-weight: 700; }
+.sp-tabs { display: flex; gap: 2px; }
+.sp-tab {
+  font-size: 11px; padding: 3px 10px; border-radius: 5px;
+  color: var(--muted); transition: all .12s;
+}
+.sp-tab.active { background: var(--s2); color: var(--text); }
+.sp-tab:hover  { color: var(--text); }
+.sp-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Health Score */
+.score-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.score-gauge { flex-shrink: 0; }
+.score-info {}
+.score-val   { font-size: 28px; font-weight: 800; }
+.score-lbl   { font-size: 11px; color: var(--muted); }
+.score-grade { font-size: 12px; font-weight: 600; margin-top: 3px; }
+
+/* Insight items */
+.insight-list { display: flex; flex-direction: column; gap: 8px; }
+.insight-item {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.insight-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.insight-text { font-size: 12px; line-height: 1.5; color: var(--muted); }
+.insight-text strong { color: var(--text); }
+
+/* Priority actions */
+.action-list { display: flex; flex-direction: column; gap: 6px; }
+.action-item {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  display: flex; align-items: flex-start; gap: 10px;
+  cursor: default;
+  transition: border-color .12s;
+}
+.action-item:hover { border-color: rgba(68,147,248,.4); }
+.action-prio {
+  font-size: 9px; font-weight: 700; letter-spacing: .5px;
+  padding: 2px 6px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+}
+.prio-h { background: rgba(248,81,73,.15); color: var(--red); }
+.prio-m { background: rgba(227,164,48,.15); color: var(--orange); }
+.prio-l { background: rgba(63,185,80,.15); color: var(--green); }
+.action-desc { font-size: 12px; line-height: 1.45; color: var(--muted); }
+.action-desc strong { color: var(--text); }
+
+/* Prompts */
+.prompt-list { display: flex; flex-direction: column; gap: 8px; }
+.prompt-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  cursor: pointer; transition: all .12s;
+}
+.prompt-card:hover {
+  border-color: rgba(68,147,248,.5);
+  background: rgba(68,147,248,.05);
+}
+.prompt-head {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 4px;
+}
+.prompt-tag { font-size: 10px; font-weight: 600; color: var(--blue); }
+.prompt-copy {
+  font-size: 10px; color: var(--muted); transition: color .12s;
+}
+.prompt-card:hover .prompt-copy { color: var(--blue); }
+.prompt-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* Custom input */
+.sp-input-area { margin-top: 2px; }
+.sp-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.sp-textarea {
+  width: 100%; height: 90px;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 12px;
+  font-family: inherit; resize: none; outline: none;
+  line-height: 1.5;
+  transition: border-color .12s;
+}
+.sp-textarea:focus { border-color: var(--blue2); }
+.sp-textarea::placeholder { color: var(--muted2); }
+.sp-btn {
+  width: 100%; margin-top: 8px;
+  background: var(--blue2); border: 1px solid var(--blue);
+  border-radius: 7px; padding: 8px;
+  font-size: 12px; font-weight: 600; color: #fff;
+  transition: all .12s;
+}
+.sp-btn:hover { background: #2871d6; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--s3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 12px; color: var(--text);
+  opacity: 0; pointer-events: none;
+  transition: all .25s; z-index: 999;
+  display: flex; align-items: center; gap: 7px;
+}
+.toast.show { opacity: 1; }
+
+/* ── Market analysis tab charts ── */
+.mkt-charts-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3,1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .mkt-charts-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="header">
+  <div class="h-brand">
+    <div class="h-logo">D</div>
+    <div>
+      <div class="h-brand-name">Cofun</div>
+      <div class="h-brand-sub">Cofun 广告管理平台</div>
+    </div>
+  </div>
+  <nav class="h-tabs">
+    <button class="h-tab active" onclick="switchTab('overview',this)">概览</button>
+    <button class="h-tab" onclick="switchTab('campaigns',this)">活动管理</button>
+    <button class="h-tab" onclick="switchTab('markets',this)">市场分析</button>
+  </nav>
+  <div class="h-right">
+    <div class="h-pill active-chip">🇺🇸 US &nbsp;🇬🇧 UK &nbsp;🇩🇪 DE &nbsp;🇨🇦 CA</div>
+    <div class="h-pill">📅 近30天</div>
+    <div class="h-pill"><div class="live-dot"></div>截至 06-08</div>
+  </div>
+</header>
+
+<!-- ══ BRAND SELECTOR ══ -->
+<div class="brand-bar">
+  <button class="brand-tab active" onclick="switchBrand('duhouse',this)">
+    <span class="brand-dot duhouse"></span>
+    Cofun
+    <span class="brand-mkts">🇺🇸 US &nbsp;🇬🇧 UK &nbsp;🇩🇪 DE &nbsp;🇨🇦 CA</span>
+    <span class="brand-count">25条活动</span>
+  </button>
+  <button class="brand-tab" onclick="switchBrand('coferset',this)">
+    <span class="brand-dot coferset"></span>
+    Coferset
+    <span class="brand-mkts">🇺🇸 US &nbsp;🇨🇦 CA</span>
+    <span class="brand-badge pending">数据同步中</span>
+  </button>
+  <button class="brand-tab" onclick="switchBrand('daillshop',this)">
+    <span class="brand-dot daillshop"></span>
+    Daillshop
+    <span class="brand-mkts">🇺🇸 US &nbsp;🇨🇦 CA</span>
+    <span class="brand-badge disabled">品牌未激活</span>
+  </button>
+</div>
+
+<!-- ══ ALERT BAR ══ -->
+<div class="alert-bar" id="alertBar">
+  <!-- Cofun alerts (default) -->
+  <div id="alerts-duhouse" style="display:flex;gap:10px;align-items:center">
+    <div class="alert-card green">
+      <span class="alert-icon">✅</span>
+      <span class="alert-label">已执行</span>
+      <span class="alert-desc">花熊自动已暂停（ACOS 65.2%），马蹄莲预算 CAD 4.5→15，新建马蹄莲PER活动</span>
+    </div>
+    <div class="alert-card orange">
+      <span class="alert-icon">📉</span>
+      <span class="alert-label">DE待优化</span>
+      <span class="alert-desc">皇妃玫瑰 ACOS 64.3%，球菊 ACOS 34%，建议降价</span>
+    </div>
+    <div class="alert-card green">
+      <span class="alert-icon">🚀</span>
+      <span class="alert-label">DE明星</span>
+      <span class="alert-desc">绣球花头自动 ACOS 7.3%、手感绣球 ACOS 8.1%——可加预算</span>
+    </div>
+  </div>
+  <!-- Coferset alerts -->
+  <div id="alerts-coferset" style="display:none;gap:10px;align-items:center">
+    <div class="alert-card orange">
+      <span class="alert-icon">⏳</span>
+      <span class="alert-label">数据同步中</span>
+      <span class="alert-desc">Coferset 集成今日创建，广告报告最多24小时后可用</span>
+    </div>
+    <div class="alert-card green">
+      <span class="alert-icon">📋</span>
+      <span class="alert-label">已识别100+活动</span>
+      <span class="alert-desc">🇺🇸 US：向日葵、绣球、尤加利、天竺葵等多品线</span>
+    </div>
+  </div>
+  <!-- Daillshop alerts -->
+  <div id="alerts-daillshop" style="display:none;gap:10px;align-items:center">
+    <div class="alert-card red">
+      <span class="alert-icon">🔒</span>
+      <span class="alert-label">品牌未激活</span>
+      <span class="alert-desc">Daillshop 需在 MarketplaceAdPros 后台激活才能读取广告数据</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP BODY ══ -->
+<div class="app-body">
+<div class="main-area">
+
+<!-- ══ BRAND VIEW: Cofun ══ -->
+<div class="brand-view active" id="brand-duhouse">
+
+<!-- ╔═ TAB: 概览 ═╗ -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="sec">核心指标</div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="sec">趋势分析</div>
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">花费 vs 销售额 vs ACOS 趋势</div>
+        <div class="card-sub">近30天 · 每日 · UK+DE+CA（US数据已含于市场卡片，每日明细待补充）</div>
+      </div>
+      <div class="chart-wrap h260"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">各市场效率对比</div>
+        <div class="card-sub">ACOS / ROAS 与行业均值比较</div>
+      </div>
+      <div class="chart-wrap h260"><canvas id="mktCompChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">分市场详情（近30天）</div>
+  <div class="market-grid" id="mktGrid"></div>
+</div>
+
+<!-- ╔═ TAB: 活动管理 ═╗ -->
+<div class="tab-panel" id="tab-campaigns">
+  <div class="sec">活动健康概览</div>
+  <div class="mgmt-summary" id="mgmtSummary"></div>
+
+  <div class="sec">Sponsored Products · Top 15 广告活动</div>
+  <div class="card" style="padding:16px 18px">
+    <div class="tbl-controls">
+      <input class="tbl-search" id="searchInput" placeholder="搜索活动名称…" oninput="filterTable()">
+      <button class="filter-btn on" data-filter="all" onclick="setFilter(this,'all')">全部 (15)</button>
+      <button class="filter-btn" data-filter="scale" onclick="setFilter(this,'scale')">🚀 放量 (3)</button>
+      <button class="filter-btn" data-filter="keep"  onclick="setFilter(this,'keep')">✅ 维持 (5)</button>
+      <button class="filter-btn" data-filter="opt"   onclick="setFilter(this,'opt')">🔍 优化 (4)</button>
+      <button class="filter-btn" data-filter="lower" onclick="setFilter(this,'lower')">⚠️ 降价 (2)</button>
+      <button class="filter-btn" data-filter="pause" onclick="setFilter(this,'pause')">🛑 暂停 (1)</button>
+      <div class="tbl-sep"></div>
+      <span class="tbl-count" id="tblCount">显示 15 条</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="campaignTable">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th>广告活动</th>
+            <th class="r sortable" onclick="sortTable('spend')">花费 ↕</th>
+            <th class="r sortable" onclick="sortTable('sales')">销售额 ↕</th>
+            <th class="r sortable" onclick="sortTable('acos')">ACOS ↕</th>
+            <th class="r">ROAS</th>
+            <th class="r">点击</th>
+            <th class="r">曝光</th>
+            <th class="c">健康度</th>
+            <th class="c">AI 建议</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ╔═ TAB: 市场分析 ═╗ -->
+<div class="tab-panel" id="tab-markets">
+  <div class="sec">市场对比（近30天）</div>
+  <div class="mkt-charts-grid">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">各市场 ACOS vs ROAS</div>
+        <div class="card-sub">与行业均值（ACOS 22%）对比</div>
+      </div>
+      <div class="chart-wrap h220"><canvas id="mktAcosChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">花费 vs 销售额分布</div>
+        <div class="card-sub">各市场本地货币，气泡大小 = 购买次数</div>
+      </div>
+      <div class="chart-wrap h220"><canvas id="mktBubbleChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-head">
+      <div class="card-title">各市场每日花费趋势</div>
+      <div class="card-sub">近30天（混合货币单位，仅供趋势参考）</div>
+    </div>
+    <div class="chart-wrap h260"><canvas id="mktDailyChart"></canvas></div>
+  </div>
+  <div class="sec">分市场详情</div>
+  <div class="market-grid" id="mktGrid2"></div>
+</div>
+
+</div><!-- /brand-duhouse -->
+
+<!-- ══ BRAND VIEW: Coferset ══ -->
+<div class="brand-view" id="brand-coferset">
+  <div class="state-card">
+    <div class="state-icon">⏳</div>
+    <div class="state-title">Coferset · 数据同步中</div>
+    <div class="state-desc">
+      Coferset 广告账户今日完成接入。系统正在拉取历史报告数据，最长需要 <strong>24小时</strong> 后方可查看完整的花费、销售、ACOS 等指标。<br><br>
+      我已识别到以下活跃市场和产品线：
+    </div>
+    <div class="state-pills">
+      <span class="state-pill">🇺🇸 美国 · 100+ 条活动</span>
+      <span class="state-pill">🇨🇦 加拿大 · 多条活动</span>
+      <span class="state-pill">向日葵 40pcs</span>
+      <span class="state-pill">手感绣球</span>
+      <span class="state-pill">尤加利小盆栽</span>
+      <span class="state-pill">天竺葵</span>
+      <span class="state-pill">皇妃玫瑰</span>
+      <span class="state-pill">假水尤加利</span>
+      <span class="state-pill">西洋绣球</span>
+      <span class="state-pill">波斯菊</span>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <span class="state-btn warn">⏳ 明日再查看数据</span>
+    </div>
+    <div style="margin-top:24px;padding:16px;background:var(--s2);border-radius:8px;text-align:left;font-size:12px;color:var(--muted)">
+      <strong style="color:var(--text)">集成信息</strong><br>
+      Integration ID: c38f451d · Account IDs: 🇺🇸 b2836ba1 &nbsp;|&nbsp; 🇨🇦 cae99b08<br>
+      接入时间: 2026-06-08 &nbsp;|&nbsp; 品牌: Coferset &nbsp;|&nbsp; Seller ID: A16BQRBRF2J1Q0
+    </div>
+  </div>
+</div>
+
+<!-- ══ BRAND VIEW: Daillshop ══ -->
+<div class="brand-view" id="brand-daillshop">
+  <div class="state-card">
+    <div class="state-icon">🔒</div>
+    <div class="state-title">Daillshop · 品牌需激活</div>
+    <div class="state-desc">
+      Daillshop 品牌在 MarketplaceAdPros 平台中处于<strong>禁用状态</strong>，无法读取广告报告数据。<br><br>
+      需要在后台手动激活该品牌，才能查看美国和加拿大市场的花瓶产品广告数据。
+    </div>
+    <div class="state-pills">
+      <span class="state-pill">🇺🇸 美国 · 花瓶系列（6条活动）</span>
+      <span class="state-pill">🇨🇦 加拿大 · 多条活动</span>
+      <span class="state-pill">花瓶 / Vase</span>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="https://app.marketplaceadpros.com/brands" target="_blank" class="state-btn">前往后台激活品牌 →</a>
+    </div>
+    <div style="margin-top:24px;padding:16px;background:var(--s2);border-radius:8px;text-align:left;font-size:12px;color:var(--muted)">
+      <strong style="color:var(--text)">集成信息</strong><br>
+      Integration ID: 0b837012 · Account IDs: 🇺🇸 beaccb8c &nbsp;|&nbsp; 🇨🇦 fc09e580<br>
+      品牌: Daillshop &nbsp;|&nbsp; Seller ID: A280K8SLG3VY2H &nbsp;|&nbsp; 状态: <span style="color:#f85149">DISABLED</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-area -->
+
+<!-- ══ STRATEGY PANEL ══ -->
+<aside class="strategy-panel">
+  <div class="sp-header">
+    <div class="sp-title">⚡ AI 策略助手</div>
+    <div class="sp-tabs">
+      <button class="sp-tab active" onclick="spTab('insights',this)">洞察</button>
+      <button class="sp-tab" onclick="spTab('prompts',this)">指令库</button>
+    </div>
+  </div>
+  <div class="sp-body" id="spBody">
+
+    <!-- ─ INSIGHTS TAB ─ -->
+    <div id="sp-insights">
+      <!-- Health Score -->
+      <div class="score-card">
+        <div class="score-gauge">
+          <svg viewBox="0 0 100 58" width="96" height="56">
+            <defs>
+              <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f85149"/>
+                <stop offset="50%" stop-color="#e3a430"/>
+                <stop offset="100%" stop-color="#3fb950"/>
+              </linearGradient>
+            </defs>
+            <path d="M 12 52 A 38 38 0 0 1 88 52" fill="none" stroke="#21262d" stroke-width="9" stroke-linecap="round"/>
+            <path d="M 12 52 A 38 38 0 0 1 88 52" fill="none" stroke="url(#sg)" stroke-width="9" stroke-linecap="round"
+                  stroke-dasharray="103.7 119.4" stroke-dashoffset="0"/>
+            <text x="50" y="52" text-anchor="middle" fill="#e6edf3" font-size="18" font-weight="800" font-family="-apple-system,sans-serif">72</text>
+          </svg>
+        </div>
+        <div class="score-info">
+          <div class="score-val c-orange">72<span style="font-size:13px;color:var(--muted)">/100</span></div>
+          <div class="score-lbl">账户健康评分</div>
+          <div class="score-grade c-orange">需要优化</div>
+        </div>
+      </div>
+
+      <!-- Key Insights -->
+      <div>
+        <div class="sp-label">📊 关键发现</div>
+        <div class="insight-list">
+          <div class="insight-item">
+            <div class="insight-icon">🇨🇦</div>
+            <div class="insight-text"><strong>加拿大是最优市场</strong>：ACOS 8.2%、ROAS 12.25x，远超英国（ACOS 22.5%），建议将预算权重向CA倾斜。</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">📉</div>
+            <div class="insight-text"><strong>近7天量能下滑</strong>：销售-24.1%、花费-17.7%，跌幅不成比例，说明效率也在下降，需检查竞价和预算设置。</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">💰</div>
+            <div class="insight-text"><strong>马蹄莲活动严重低配</strong>：ACOS 7.64%、ROAS 13.1x，仅排第9名花费，存在大量放量空间。</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">🔥</div>
+            <div class="insight-text"><strong>花熊活动烧钱</strong>：ACOS 65.2%，每100元花费仅带来154元销售，建议立即暂停或大幅降价。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Actions -->
+      <div>
+        <div class="sp-label">🎯 优先行动项</div>
+        <div class="action-list">
+          <div class="action-item">
+            <div class="action-prio prio-h">P1</div>
+            <div class="action-desc"><strong>暂停花熊活动</strong>：ACOS 65%，止损约每日 ¥6 无效花费</div>
+          </div>
+          <div class="action-item">
+            <div class="action-prio prio-h">P2</div>
+            <div class="action-desc"><strong>马蹄莲提预算+提价</strong>：当前预算可能限制曝光，ROAS 13x是最强活动</div>
+          </div>
+          <div class="action-item">
+            <div class="action-prio prio-m">P3</div>
+            <div class="action-desc"><strong>球菊/大词活动优化</strong>：ACOS 35-40%，审查关键词，否定低效词</div>
+          </div>
+          <div class="action-item">
+            <div class="action-prio prio-m">P4</div>
+            <div class="action-desc"><strong>诊断7天下滑原因</strong>：检查5/22-5/30期间预算、竞争对手、库存</div>
+          </div>
+          <div class="action-item">
+            <div class="action-prio prio-l">P5</div>
+            <div class="action-desc"><strong>加拿大市场加码</strong>：ROAS 12.25x，考虑增加CA专属活动和预算</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom input -->
+      <div class="sp-input-area">
+        <div class="sp-label">💬 向AI提问</div>
+        <textarea class="sp-textarea" id="customPrompt" placeholder="例如：帮我分析绒布玫瑰活动的关键词策略，或者制定下周预算方案…"></textarea>
+        <button class="sp-btn" onclick="copyCustomPrompt()">复制问题 → 粘贴给 Claude</button>
+      </div>
+    </div>
+
+    <!-- ─ PROMPTS TAB ─ (hidden by default) -->
+    <div id="sp-prompts" style="display:none">
+      <div class="sp-label">点击即可复制，粘贴到对话框发给 Claude</div>
+      <div class="prompt-list">
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">📉 诊断下滑</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun近7天广告销售下降24.1%、花费下降17.7%。请分析可能的原因（竞价不足、预算耗尽、竞争加剧、季节性），并给出每个原因的验证方法和对应解决方案。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">🚀 扩量方案</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun马蹄莲手动广泛活动近30天ACOS 7.64%、ROAS 13.1x，花费仅152元排第9位。请给出具体扩量方案：提预算多少、是否新开自动活动、是否拓展加拿大市场、目标ACOS设为多少。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">⚠️ 止损优化</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun以下活动ACOS偏高需优化：花熊自动65.2%、球菊自动38.8%、大词活动27.5%、JN绣球30.8%。请针对每个活动给出具体操作步骤：降价幅度、建议否定词类型、或暂停理由。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">🌍 市场策略</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun加拿大市场ROAS 12.25x、ACOS 8.2%，英国ROAS 4.43x、ACOS 22.5%。请分析加拿大优势的可能原因（品类竞争度、价格定位、评分），并制定：①加拿大深耕策略 ②将成功经验复制到欧洲的方案。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">💰 预算分配</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun下周广告预算总额与本周持平（约¥1750/周）。请基于以下数据给出最优分配方案：UK ACOS22.5%、EU ACOS13.3%、CA ACOS8.2%；花费最高活动绒布玫瑰ACOS20.7%，马蹄莲ACOS7.6%。按市场和活动给出具体金额建议。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">🔑 关键词策略</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">Cofun绒布玫瑰自动活动近30天花费803元（最高），ACOS 20.7%，点击1492次。请帮我制定关键词优化策略：①从自动报告中应该捞取哪些词转手动 ②哪类词应该否定 ③是否建议开品词/大词/ASIN定向分组。</div>
+        </div>
+        <div class="prompt-card" onclick="copyPrompt(this)">
+          <div class="prompt-head">
+            <span class="prompt-tag">📊 月度复盘</span>
+            <span class="prompt-copy">点击复制</span>
+          </div>
+          <div class="prompt-text">请帮我生成Cofun 2026年5月广告月报，包含：①整体表现总结（花费/销售/ACOS/ROAS）②各市场亮点和问题 ③Top活动表现 ④本月最大问题和改进点 ⑤6月目标和行动计划。数据：近30天花费7390单位、销售46685单位、综合ACOS 15.8%、ROAS 6.3x。</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sp-body -->
+</aside>
+
+</div><!-- /app-body -->
+
+<!-- Toast -->
+<div class="toast" id="toast">✅ 已复制到剪贴板</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+
+const daily = [
+  {d:"05-09",spend:229.55,sales:1118.86,imp:101818,clicks:666,purch:62},
+  {d:"05-10",spend:245.89,sales:1652.92,imp:119338,clicks:707,purch:85},
+  {d:"05-11",spend:245.60,sales:2175.74,imp:111099,clicks:713,purch:101},
+  {d:"05-12",spend:257.36,sales:1752.39,imp:115539,clicks:730,purch:75},
+  {d:"05-13",spend:257.36,sales:1752.96,imp:129108,clicks:687,purch:85},
+  {d:"05-14",spend:274.21,sales:1870.70,imp:134152,clicks:779,purch:90},
+  {d:"05-15",spend:259.26,sales:1338.89,imp:127054,clicks:683,purch:66},
+  {d:"05-16",spend:306.01,sales:2784.82,imp:134057,clicks:808,purch:91},
+  {d:"05-17",spend:318.57,sales:1537.87,imp:154113,clicks:870,purch:88},
+  {d:"05-18",spend:333.52,sales:2281.92,imp:159002,clicks:922,purch:101},
+  {d:"05-19",spend:317.87,sales:1939.26,imp:145581,clicks:849,purch:95},
+  {d:"05-20",spend:279.57,sales:2456.69,imp:134335,clicks:749,purch:126},
+  {d:"05-21",spend:280.40,sales:1934.98,imp:126127,clicks:740,purch:107},
+  {d:"05-22",spend:195.40,sales:1754.56,imp:99400, clicks:522,purch:69},
+  {d:"05-23",spend:177.56,sales:839.94, imp:96911, clicks:496,purch:60},
+  {d:"05-24",spend:210.42,sales:1333.61,imp:100731,clicks:582,purch:67},
+  {d:"05-25",spend:217.19,sales:1252.76,imp:100709,clicks:605,purch:69},
+  {d:"05-26",spend:177.41,sales:1171.15,imp:91164, clicks:485,purch:70},
+  {d:"05-27",spend:192.22,sales:1802.96,imp:83425, clicks:535,purch:76},
+  {d:"05-28",spend:183.07,sales:1302.18,imp:85139, clicks:485,purch:72},
+  {d:"05-29",spend:169.15,sales:981.94, imp:76320, clicks:442,purch:50},
+  {d:"05-30",spend:215.48,sales:1005.01,imp:92923, clicks:558,purch:57},
+  {d:"05-31",spend:298.37,sales:1232.86,imp:125925,clicks:802,purch:66},
+  {d:"06-01",spend:248.02,sales:1305.54,imp:107414,clicks:673,purch:69},
+  {d:"06-02",spend:271.25,sales:1761.62,imp:139276,clicks:712,purch:110},
+  {d:"06-03",spend:280.88,sales:1739.80,imp:133888,clicks:728,purch:83},
+  {d:"06-04",spend:255.83,sales:1222.08,imp:107618,clicks:670,purch:84},
+  {d:"06-05",spend:204.31,sales:1359.74,imp:97697, clicks:534,purch:63},
+  {d:"06-06",spend:235.59,sales:1124.33,imp:99158, clicks:635,purch:57},
+  {d:"06-07",spend:252.76,sales:896.65, imp:103456,clicks:696,purch:59}
+];
+
+const markets = [
+  {name:"🇺🇸 美国",   cc:"US",  cls:"us",  cur:"USD", color:"#e3a430", spend:27369.07, sales:109297.17, imp:10277200, clicks:51386, purch:4526},
+  {name:"🇬🇧 英国",  cc:"UK",  cls:"uk",  cur:"GBP", color:"#4493f8", spend:4814.16,  sales:21347.03,  imp:1897399,  clicks:10535, purch:1395},
+  {name:"🇩🇪 德国",  cc:"DE",  cls:"de",  cur:"EUR", color:"#a371f7", spend:1315.35,  sales:9897.50,   imp:721688,   clicks:4031,  purch:439},
+  {name:"🇨🇦 加拿大", cc:"CA", cls:"ca",  cur:"CAD", color:"#3fb950", spend:1260.57,  sales:15440.20,  imp:813390,   clicks:5497,  purch:519}
+];
+
+const campaigns = [
+  {name:"绒布玫瑰自动-20.9.14",            spend:803.01, sales:3882.75, acos:.2068, clicks:1492, imp:284170, action:"keep"},
+  {name:"YXJ-绣球花头-手动广泛SKAG-26.4.3", spend:296.14, sales:1244.03, acos:.238,  clicks:657,  imp:100956, action:"opt"},
+  {name:"YXJ-球菊自动-25.11.26",            spend:220.45, sales:568.11,  acos:.388,  clicks:452,  imp:65004,  action:"lower"},
+  {name:"绒布玫瑰手动广泛-SKAG-23.10.10",   spend:217.97, sales:839.11,  acos:.2598, clicks:390,  imp:74895,  action:"opt"},
+  {name:"YXJ-花熊-自动-26.01.27",           spend:179.85, sales:275.70,  acos:.6523, clicks:306,  imp:49039,  action:"pause"},
+  {name:"pe玫瑰自动广告活动-23.3.22",       spend:175.76, sales:732.20,  acos:.24,   clicks:318,  imp:73025,  action:"opt"},
+  {name:"YXJ-PE玫瑰-PER-24.1.25",          spend:157.96, sales:879.21,  acos:.1797, clicks:408,  imp:46014,  action:"keep"},
+  {name:"绒布玫瑰-主推引流大词-B-JAS 0116", spend:154.24, sales:560.77,  acos:.2751, clicks:341,  imp:78881,  action:"lower"},
+  {name:"马蹄莲手动广泛-23.7.6",            spend:152.67, sales:1998.60, acos:.0764, clicks:578,  imp:44930,  action:"scale"},
+  {name:"YXJ-绒布玫瑰-ASIN-24.11.18",      spend:142.15, sales:691.32,  acos:.2056, clicks:323,  imp:38956,  action:"keep"},
+  {name:"RM-马蹄莲自动-26.4.22",            spend:140.39, sales:1287.90, acos:.109,  clicks:560,  imp:99179,  action:"scale"},
+  {name:"绣球花头手动广泛-PER-21.4.17",     spend:133.66, sales:1215.22, acos:.11,   clicks:301,  imp:30746,  action:"scale"},
+  {name:"绣球花头-PER-主推-E-JAS 0110",     spend:126.45, sales:623.52,  acos:.2028, clicks:268,  imp:15376,  action:"keep"},
+  {name:"pe玫瑰-PER-B+E-JAS-25.1.10",     spend:122.81, sales:1277.04, acos:.0962, clicks:287,  imp:36002,  action:"scale"},
+  {name:"JN-手感绣球大词手动广泛-26.4.1",   spend:120.93, sales:393.08,  acos:.3076, clicks:336,  imp:55152,  action:"opt"},
+  // ── 🇺🇸 美国站 ──
+  {name:"🇺🇸 绒布玫瑰手动精准-变体颜色-0.6+TOS30", spend:1205.08, sales:3501.15, acos:.3442, clicks:1593, imp:318600, action:"opt"},
+  {name:"🇺🇸 CK-手感绣球颜色广泛-PER-24.12.23",    spend:466.57,  sales:2791.48, acos:.1671, clicks:737,  imp:147400, action:"scale"},
+  {name:"🇺🇸 pe玫瑰手动广泛-PER-22.5.13",          spend:609.15,  sales:2592.35, acos:.235,  clicks:1023, imp:204600, action:"keep"},
+  {name:"🇺🇸 CK-手感绣球绿色手动广泛-26.1.20",     spend:349.80,  sales:2622.25, acos:.1334, clicks:899,  imp:179800, action:"scale"},
+  {name:"🇺🇸 CK-pe玫瑰颜色广泛-PER-24.7.11",       spend:364.36,  sales:2149.19, acos:.1695, clicks:670,  imp:134000, action:"scale"},
+  {name:"🇺🇸 CK-pe玫瑰颜色手动广泛-24.5.25",       spend:436.66,  sales:2507.37, acos:.1742, clicks:874,  imp:174800, action:"scale"},
+  {name:"🇺🇸 David-50pcs绒玫瑰-asin投放-动升",      spend:625.82,  sales:1399.61, acos:.4471, clicks:457,  imp:91400,  action:"lower"},
+  {name:"🇺🇸 CK-波斯菊-自动-动升-26.4.20",          spend:385.93,  sales:891.22,  acos:.433,  clicks:511,  imp:102200, action:"pause"},
+  {name:"🇺🇸 JAS-绒布玫瑰大词+TOS100降低-0210",     spend:452.22,  sales:1123.41, acos:.4025, clicks:433,  imp:86600,  action:"lower"},
+  {name:"🇺🇸 JAS-绒布玫瑰大词动升主推-0316",        spend:363.99,  sales:747.06,  acos:.4872, clicks:378,  imp:75600,  action:"pause"}
+];
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+const sum = (a,k) => a.reduce((s,d)=>s+d[k],0);
+const fc  = (n,d=1) => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e4?(n/1e3).toFixed(1)+'K':n.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const fn  = n => n.toLocaleString('zh-CN');
+
+Chart.defaults.color      = '#7d8590';
+Chart.defaults.font.size  = 11;
+Chart.defaults.font.family = "-apple-system,'PingFang SC',sans-serif";
+
+function acosColor(a) {
+  if (a<.15) return '#3fb950';
+  if (a<.25) return '#4493f8';
+  if (a<.35) return '#e3a430';
+  return '#f85149';
+}
+function acosClass(a) {
+  if (a<.15) return 'c-green'; if (a<.25) return 'c-blue';
+  if (a<.35) return 'c-orange'; return 'c-red';
+}
+function healthDot(a) {
+  const c = acosColor(a);
+  return `<span class="health-dot" style="background:${c}"></span>`;
+}
+function actionBadge(t) {
+  const map = {
+    scale:'<span class="badge b-scale">🚀 放量</span>',
+    keep: '<span class="badge b-keep">✅ 维持</span>',
+    opt:  '<span class="badge b-opt">🔍 优化</span>',
+    lower:'<span class="badge b-lower">⚠️ 降价</span>',
+    pause:'<span class="badge b-pause">🛑 暂停</span>'
+  };
+  return map[t] || '';
+}
+
+function sparkSVG(data, color, w=68, h=24) {
+  const mn = Math.min(...data), mx = Math.max(...data), rng = mx-mn||1;
+  const pts = data.map((v,i)=>`${(i/(data.length-1)*w).toFixed(1)},${(h-(v-mn)/rng*h*.85).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function showToast(msg='✅ 已复制到剪贴板') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ── Brand switching ──
+function switchBrand(brand, el) {
+  // Update brand tab active states
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Show/hide brand views
+  document.querySelectorAll('.brand-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('brand-' + brand).classList.add('active');
+  // Show/hide alert sets
+  ['duhouse','coferset','daillshop'].forEach(b => {
+    const el2 = document.getElementById('alerts-' + b);
+    if (el2) el2.style.display = (b === brand) ? 'flex' : 'none';
+  });
+  // Update header pill
+  const pillMkts = {
+    duhouse: '🇺🇸 US &nbsp;🇬🇧 UK &nbsp;🇩🇪 DE &nbsp;🇨🇦 CA',
+    coferset: '🇺🇸 US &nbsp;🇨🇦 CA',
+    daillshop: '🇺🇸 US &nbsp;🇨🇦 CA'
+  };
+  const pill = document.querySelector('.h-pill.active-chip');
+  if (pill) pill.innerHTML = pillMkts[brand] || '';
+}
+
+// ══════════════════════════════════════════════════
+// KPI CARDS
+// ══════════════════════════════════════════════════
+const tSpend  = sum(daily,'spend'),  tSales = sum(daily,'sales');
+const tClicks = sum(daily,'clicks'), tImp   = sum(daily,'imp');
+const tPurch  = sum(daily,'purch');
+const oAcos   = tSpend/tSales*100,   oRoas  = tSales/tSpend;
+const oCtr    = tClicks/tImp*100,    oCvr   = tPurch/tClicks*100;
+
+const spendSpark = daily.map(d=>d.spend);
+const salesSpark = daily.map(d=>d.sales);
+const acosSpark  = daily.map(d=>d.spend/d.sales*100);
+const ctrSpark   = daily.map(d=>d.clicks/d.imp*100);
+
+const kpis = [
+  {lbl:'总花费 (30天)',   val:fc(tSpend),          sub:'混合货币',          color:'blue',   spark:spendSpark, sc:'#4493f8', trend:'▼7.7%', td:'down'},
+  {lbl:'广告销售 (30天)', val:fc(tSales),          sub:'14天归因窗口',      color:'green',  spark:salesSpark, sc:'#3fb950', trend:'▼14.1%',td:'down'},
+  {lbl:'综合 ACOS',      val:oAcos.toFixed(1)+'%', sub:'花费÷销售',        color:oAcos<20?'green':'orange', spark:acosSpark, sc:oAcos<20?'#3fb950':'#e3a430', trend:'', td:'neu'},
+  {lbl:'综合 ROAS',      val:oRoas.toFixed(2)+'x', sub:'销售÷花费',        color:'purple', spark:salesSpark, sc:'#a371f7', trend:'', td:'neu'},
+  {lbl:'总点击 / CTR',   val:fc(tClicks,0),        sub:'CTR '+oCtr.toFixed(2)+'%', color:'teal', spark:ctrSpark,   sc:'#2ea8a0', trend:'', td:'neu'},
+  {lbl:'购买 / CVR',     val:fn(tPurch),            sub:'CVR '+oCvr.toFixed(1)+'%',  color:'blue',  spark:spendSpark, sc:'#4493f8', trend:'', td:'neu'}
+];
+
+const kpiGrid = document.getElementById('kpiGrid');
+kpis.forEach(k => {
+  kpiGrid.insertAdjacentHTML('beforeend',`
+    <div class="kpi ${k.color}">
+      <div class="kpi-top">
+        <div class="kpi-label">${k.lbl}</div>
+        <div class="kpi-spark">${sparkSVG(k.spark,k.sc)}</div>
+      </div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-bot">
+        <div class="kpi-sub">${k.sub}</div>
+        ${k.trend?`<div class="kpi-trend ${k.td}">${k.trend}</div>`:''}
+      </div>
+    </div>
+  `);
+});
+
+// ══════════════════════════════════════════════════
+// TREND CHART (3 datasets, dual axis)
+// ══════════════════════════════════════════════════
+new Chart(document.getElementById('trendChart'),{
+  data:{
+    labels: daily.map(d=>d.d),
+    datasets:[
+      {type:'line', label:'销售额', data:daily.map(d=>d.sales),
+       borderColor:'#3fb950', backgroundColor:'rgba(63,185,80,.06)',
+       fill:true, tension:.35, pointRadius:0, pointHoverRadius:4, borderWidth:2, yAxisID:'y1', order:1},
+      {type:'line', label:'广告花费', data:daily.map(d=>d.spend),
+       borderColor:'#4493f8', backgroundColor:'rgba(68,147,248,.05)',
+       fill:true, tension:.35, pointRadius:0, pointHoverRadius:4, borderWidth:2, yAxisID:'y', order:2},
+      {type:'line', label:'ACOS %', data:daily.map(d=>+(d.spend/d.sales*100).toFixed(1)),
+       borderColor:'#e3a430', backgroundColor:'transparent',
+       fill:false, tension:.35, pointRadius:0, pointHoverRadius:4, borderWidth:1.5, borderDash:[4,3], yAxisID:'y2', order:3}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{labels:{color:'#7d8590',font:{size:11},boxWidth:10,padding:14}},
+      tooltip:{
+        backgroundColor:'#1c2333',borderColor:'#30363d',borderWidth:1,
+        titleColor:'#e6edf3',bodyColor:'#7d8590',padding:10,
+        callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('zh-CN',{minimumFractionDigits:1,maximumFractionDigits:1})}${ctx.datasetIndex===2?'%':''}`}
+      }
+    },
+    scales:{
+      x:{ticks:{color:'#555f6d',font:{size:10},maxTicksLimit:10,maxRotation:0},grid:{color:'rgba(48,54,61,.3)'}},
+      y:{position:'left',  ticks:{color:'#4493f8',font:{size:10}},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'花费',color:'#4493f8',font:{size:10}}},
+      y1:{position:'right', ticks:{color:'#3fb950',font:{size:10}},grid:{display:false},title:{display:true,text:'销售额',color:'#3fb950',font:{size:10}}},
+      y2:{position:'right', ticks:{color:'#e3a430',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'ACOS',color:'#e3a430',font:{size:10}},min:0,max:40}
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════
+// MARKET COMPARISON CHART (horizontal bar)
+// ══════════════════════════════════════════════════
+const mktAcos  = markets.map(m=>+(m.spend/m.sales*100).toFixed(1));
+const mktRoas  = markets.map(m=>+(m.sales/m.spend).toFixed(2));
+const industryAcos = 22; // Amazon SP industry average
+
+new Chart(document.getElementById('mktCompChart'),{
+  type:'bar',
+  data:{
+    labels:['🇺🇸 美国','🇬🇧 英国','🇩🇪 德国','🇨🇦 加拿大'],
+    datasets:[
+      {label:'ACOS %',     data:mktAcos, backgroundColor:mktAcos.map(a=>a<industryAcos?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)'), borderRadius:4, yAxisID:'ya'},
+      {label:'行业均值 22%', data:[22,22,22,22], type:'line', borderColor:'rgba(255,255,255,.25)', borderDash:[4,3], borderWidth:1.5, pointRadius:0, fill:false, yAxisID:'ya'},
+      {label:'ROAS',       data:mktRoas, backgroundColor:'rgba(163,113,247,.7)', borderRadius:4, yAxisID:'yr'}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{labels:{color:'#7d8590',font:{size:11},boxWidth:10,padding:12}},
+      tooltip:{
+        backgroundColor:'#1c2333',borderColor:'#30363d',borderWidth:1,
+        titleColor:'#e6edf3',bodyColor:'#7d8590',padding:10
+      }
+    },
+    scales:{
+      x:{ticks:{color:'#7d8590',font:{size:11}},grid:{color:'rgba(48,54,61,.3)'}},
+      ya:{position:'left',  ticks:{color:'#4493f8',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'ACOS',color:'#4493f8',font:{size:10}}},
+      yr:{position:'right', ticks:{color:'#a371f7',font:{size:10},callback:v=>v+'x'},grid:{display:false},title:{display:true,text:'ROAS',color:'#a371f7',font:{size:10}}}
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════
+// MARKET CARDS (rendered to both tabs)
+// ══════════════════════════════════════════════════
+const totalMktSpend = sum(markets,'spend');
+
+function renderMarketCards(containerId) {
+  const grid = document.getElementById(containerId);
+  markets.forEach(m=>{
+    const acos = m.spend/m.sales*100, roas = m.sales/m.spend;
+    const ctr  = m.clicks/m.imp*100,  pct  = m.spend/totalMktSpend*100;
+    const ac   = acos<15?'b-scale':acos<25?'b-keep':'b-lower';
+    const rc   = roas>8?'c-green':roas>4?'c-orange':'c-red';
+    grid.insertAdjacentHTML('beforeend',`
+      <div class="mkt-card ${m.cls}">
+        <div class="mkt-head">
+          <div class="mkt-name" style="color:${m.color}">${m.name} <span style="font-size:11px;color:var(--muted);font-weight:400">${m.cc}</span></div>
+          <span class="badge ${ac}">ACOS ${acos.toFixed(1)}%</span>
+        </div>
+        <div class="mkt-rows">
+          <div class="mkt-row"><span class="mkt-row-l">广告花费</span><span class="mkt-row-r">${m.spend.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">广告销售额</span><span class="mkt-row-r">${m.sales.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">ROAS</span><span class="mkt-row-r ${rc}">${roas.toFixed(2)}x</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">CTR</span><span class="mkt-row-r">${ctr.toFixed(2)}%</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">购买次数</span><span class="mkt-row-r">${m.purch.toLocaleString()} 次</span></div>
+        </div>
+        <div class="mkt-bar-row">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--muted)">花费占比</span>
+            <span style="font-size:11px;font-weight:600;color:${m.color}">${pct.toFixed(1)}%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+        </div>
+      </div>
+    `);
+  });
+}
+renderMarketCards('mktGrid');
+renderMarketCards('mktGrid2');
+
+// ══════════════════════════════════════════════════
+// CAMPAIGN TABLE
+// ══════════════════════════════════════════════════
+let currentFilter = 'all';
+let sortKey = null, sortDir = 1;
+
+function renderTable(data) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  data.forEach((c,i)=>{
+    const roas = c.sales/c.spend;
+    const acosPct = Math.min(c.acos/0.7*100, 100);
+    const hc = acosClass(c.acos);
+    tbody.insertAdjacentHTML('beforeend',`
+      <tr data-action="${c.action}">
+        <td class="c-muted" style="font-size:11px">${i+1}</td>
+        <td>
+          <div class="cname-cell">
+            ${healthDot(c.acos)}
+            <span class="cname" title="${c.name}">${c.name}</span>
+          </div>
+        </td>
+        <td class="r">${c.spend.toFixed(2)}</td>
+        <td class="r">${c.sales.toFixed(2)}</td>
+        <td class="r">
+          <div class="acos-cell-inner">
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:${acosPct}%;background:${acosColor(c.acos)}"></div></div>
+            <span class="${hc}" style="font-variant-numeric:tabular-nums;min-width:36px;text-align:right">${(c.acos*100).toFixed(1)}%</span>
+          </div>
+        </td>
+        <td class="r">${roas.toFixed(2)}x</td>
+        <td class="r">${fn(c.clicks)}</td>
+        <td class="r">${fn(c.imp)}</td>
+        <td class="c">${healthDot(c.acos)}</td>
+        <td class="c">${actionBadge(c.action)}</td>
+      </tr>
+    `);
+  });
+  document.getElementById('tblCount').textContent = `显示 ${data.length} 条`;
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return campaigns.filter(c=>{
+    const matchFilter = currentFilter==='all' || c.action===currentFilter;
+    const matchSearch = !q || c.name.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+function filterTable() { renderTable(getFiltered()); }
+function setFilter(el, f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  filterTable();
+}
+function sortTable(key) {
+  if (sortKey===key) sortDir*=-1; else {sortKey=key; sortDir=1;}
+  const data = getFiltered().sort((a,b)=>sortDir*(a[key]-b[key]));
+  renderTable(data);
+}
+
+renderTable(campaigns);
+
+// Campaign health summary boxes
+const counts = {scale:0,keep:0,opt:0,lower:0,pause:0};
+campaigns.forEach(c=>counts[c.action]++);
+const mgmtSummary = document.getElementById('mgmtSummary');
+[
+  {lbl:'🚀 放量机会', val:counts.scale, color:'var(--green)'},
+  {lbl:'✅ 表现良好', val:counts.keep,  color:'var(--blue)'},
+  {lbl:'🔍 需要优化', val:counts.opt,   color:'var(--purple)'},
+  {lbl:'⚠️ 建议降价', val:counts.lower, color:'var(--orange)'},
+  {lbl:'🛑 建议暂停', val:counts.pause, color:'var(--red)'}
+].forEach(b=>{
+  mgmtSummary.insertAdjacentHTML('beforeend',`
+    <div class="mgmt-box">
+      <div class="mgmt-num" style="color:${b.color}">${b.val}</div>
+      <div class="mgmt-lbl">${b.lbl}</div>
+    </div>
+  `);
+});
+
+// ══════════════════════════════════════════════════
+// MARKET ANALYSIS CHARTS
+// ══════════════════════════════════════════════════
+
+// ACOS bar chart for market tab
+new Chart(document.getElementById('mktAcosChart'),{
+  type:'bar',
+  data:{
+    labels:['🇬🇧 英国 (GBP)','🇩🇪 德国 (EUR)','🇨🇦 加拿大 (CAD)'],
+    datasets:[
+      {label:'ACOS %', data:mktAcos, backgroundColor:['rgba(68,147,248,.7)','rgba(163,113,247,.7)','rgba(63,185,80,.7)'], borderRadius:6},
+      {label:'行业均值', data:[22,22,22], type:'line', borderColor:'rgba(255,255,255,.3)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#7d8590',font:{size:11},boxWidth:10}},
+      tooltip:{backgroundColor:'#1c2333',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#7d8590'}
+    },
+    scales:{
+      x:{ticks:{color:'#7d8590'},grid:{color:'rgba(48,54,61,.3)'}},
+      y:{ticks:{color:'#7d8590',callback:v=>v+'%'},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'ACOS %',color:'#7d8590',font:{size:10}}}
+    }
+  }
+});
+
+// Bubble chart
+new Chart(document.getElementById('mktBubbleChart'),{
+  type:'bubble',
+  data:{
+    datasets: markets.map((m,i)=>({
+      label: m.name,
+      data:[{x:m.spend, y:m.sales, r: Math.sqrt(m.purch)*1.2}],
+      backgroundColor: m.color+'99',
+      borderColor: m.color,
+      borderWidth: 2
+    }))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#7d8590',font:{size:11},boxWidth:10}},
+      tooltip:{
+        backgroundColor:'#1c2333',borderColor:'#30363d',borderWidth:1,
+        titleColor:'#e6edf3',bodyColor:'#7d8590',padding:10,
+        callbacks:{
+          label:ctx=>{
+            const m=markets[ctx.datasetIndex];
+            return [`花费: ${m.spend.toLocaleString()} ${m.cur}`,`销售: ${m.sales.toLocaleString()} ${m.cur}`,`购买: ${m.purch} 次`];
+          }
+        }
+      }
+    },
+    scales:{
+      x:{ticks:{color:'#7d8590',font:{size:10}},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'广告花费',color:'#7d8590',font:{size:10}}},
+      y:{ticks:{color:'#7d8590',font:{size:10}},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'广告销售额',color:'#7d8590',font:{size:10}}}
+    }
+  }
+});
+
+// Daily trend per market (simulated proportional split)
+const ukW=0.651, euW=0.178, caW=0.171;
+new Chart(document.getElementById('mktDailyChart'),{
+  type:'line',
+  data:{
+    labels:daily.map(d=>d.d),
+    datasets:[
+      {label:'🇬🇧 英国', data:daily.map(d=>+(d.spend*ukW).toFixed(2)), borderColor:'#4493f8', fill:false, tension:.35, pointRadius:0, borderWidth:2},
+      {label:'🇩🇪 德国',  data:daily.map(d=>+(d.spend*euW).toFixed(2)), borderColor:'#a371f7', fill:false, tension:.35, pointRadius:0, borderWidth:2},
+      {label:'🇨🇦 加拿大', data:daily.map(d=>+(d.spend*caW).toFixed(2)),borderColor:'#3fb950', fill:false, tension:.35, pointRadius:0, borderWidth:2}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{labels:{color:'#7d8590',font:{size:11},boxWidth:10,padding:12}},
+      tooltip:{backgroundColor:'#1c2333',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#7d8590',padding:10}
+    },
+    scales:{
+      x:{ticks:{color:'#555f6d',font:{size:10},maxTicksLimit:10,maxRotation:0},grid:{color:'rgba(48,54,61,.3)'}},
+      y:{ticks:{color:'#7d8590',font:{size:10}},grid:{color:'rgba(48,54,61,.3)'},title:{display:true,text:'花费占比（估算）',color:'#7d8590',font:{size:10}}}
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════
+// STRATEGY PANEL
+// ══════════════════════════════════════════════════
+function spTab(id, el) {
+  document.getElementById('sp-insights').style.display = id==='insights'?'contents':'none';
+  document.getElementById('sp-prompts').style.display  = id==='prompts'?'contents':'none';
+  document.querySelectorAll('.sp-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function copyPrompt(card) {
+  const txt = card.querySelector('.prompt-text').textContent.trim();
+  navigator.clipboard.writeText(txt).then(()=>{
+    card.querySelector('.prompt-copy').textContent = '✅ 已复制';
+    showToast('✅ 指令已复制 — 直接粘贴给 Claude');
+    setTimeout(()=>{ card.querySelector('.prompt-copy').textContent = '点击复制'; }, 2500);
+  });
+}
+
+function copyCustomPrompt() {
+  const txt = document.getElementById('customPrompt').value.trim();
+  if (!txt) { showToast('⚠️ 请先输入问题'); return; }
+  navigator.clipboard.writeText(txt).then(()=>showToast('✅ 问题已复制 — 粘贴给 Claude 即可'));
+}
+</script>
+</body>
+</html>
