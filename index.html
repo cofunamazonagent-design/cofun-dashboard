@@ -616,7 +616,7 @@ tbody td.c { text-align: center; }
   <div class="h-right">
     <div class="h-pill active-chip">🇺🇸 US &nbsp;🇬🇧 UK &nbsp;🇩🇪 DE &nbsp;🇨🇦 CA</div>
     <div class="h-pill">📅 近30天</div>
-    <div class="h-pill"><div class="live-dot"></div>截至 06-08</div>
+    <div class="h-pill"><div class="live-dot"></div><span id="data-updated-at">截至 06-08</span></div>
   </div>
 </header>
 
@@ -1272,7 +1272,7 @@ new Chart(document.getElementById('mktCompChart'),{
 // ══════════════════════════════════════════════════
 // MARKET CARDS (rendered to both tabs)
 // ══════════════════════════════════════════════════
-const totalMktSpend = sum(markets,'spend');
+let totalMktSpend = sum(markets,'spend');
 
 function renderMarketCards(containerId) {
   const grid = document.getElementById(containerId);
@@ -1513,6 +1513,37 @@ function copyCustomPrompt() {
   if (!txt) { showToast('⚠️ 请先输入问题'); return; }
   navigator.clipboard.writeText(txt).then(()=>showToast('✅ 问题已复制 — 粘贴给 Claude 即可'));
 }
+
+async function loadLiveData() {
+  try {
+    const resp = await fetch('./data.json?t=' + Date.now());
+    if (!resp.ok) return;
+    const data = await resp.json();
+    data.markets.forEach(d => {
+      const m = markets.find(m => m.cc === d.market);
+      if (!m) return;
+      m.spend = d.spend;
+      m.sales = d.sales;
+      m.clicks = d.clicks;
+      m.imp = d.impressions;
+      m.purch = d.orders;
+    });
+    totalMktSpend = sum(markets, 'spend');
+    ['mktGrid','mktGrid2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '';
+    });
+    renderMarketCards('mktGrid');
+    renderMarketCards('mktGrid2');
+    if (data.updated_at) {
+      const label = new Date(data.updated_at).toLocaleString('zh-CN',
+        {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const el = document.getElementById('data-updated-at');
+      if (el) el.textContent = '数据更新：' + label;
+    }
+  } catch(e) { /* 静默回退到静态数据 */ }
+}
+document.addEventListener('DOMContentLoaded', loadLiveData);
 </script>
 </body>
 </html>
