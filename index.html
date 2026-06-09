@@ -636,9 +636,9 @@ tbody td.c { text-align: center; }
   </button>
   <button class="brand-tab" onclick="switchBrand('daillshop',this)">
     <span class="brand-dot daillshop"></span>
-    Daillshop
-    <span class="brand-mkts">🇺🇸 US &nbsp;🇨🇦 CA</span>
-    <span class="brand-badge disabled">品牌未激活</span>
+    Purvonnie
+    <span class="brand-mkts">🇺🇸 US</span>
+    <span class="brand-count">66条活动</span>
   </button>
 </div>
 
@@ -677,10 +677,15 @@ tbody td.c { text-align: center; }
   </div>
   <!-- Daillshop alerts -->
   <div id="alerts-daillshop" style="display:none;gap:10px;align-items:center">
-    <div class="alert-card red">
-      <span class="alert-icon">🔒</span>
-      <span class="alert-label">品牌未激活</span>
-      <span class="alert-desc">Daillshop 需在 MarketplaceAdPros 后台激活才能读取广告数据</span>
+    <div class="alert-card green">
+      <span class="alert-icon">📊</span>
+      <span class="alert-label">US: ACOS 20.4%</span>
+      <span class="alert-desc">花费 $2,016 / 销售额 $9,888 · 近30天，66条活动</span>
+    </div>
+    <div class="alert-card orange">
+      <span class="alert-icon">🌎</span>
+      <span class="alert-label">CA/MX/BR 待接入</span>
+      <span class="alert-desc">其余市场在 MAP 中，需激活 Purvonnie 品牌后可读取</span>
     </div>
   </div>
 </div>
@@ -801,27 +806,15 @@ tbody td.c { text-align: center; }
   </div>
 </div>
 
-<!-- ══ BRAND VIEW: Daillshop ══ -->
+<!-- ══ BRAND VIEW: Purvonnie (Daillshop) ══ -->
 <div class="brand-view" id="brand-daillshop">
-  <div class="state-card">
-    <div class="state-icon">🔒</div>
-    <div class="state-title">Daillshop · 品牌需激活</div>
-    <div class="state-desc">
-      Daillshop 品牌在 MarketplaceAdPros 平台中处于<strong>禁用状态</strong>，无法读取广告报告数据。<br><br>
-      需要在后台手动激活该品牌，才能查看美国和加拿大市场的花瓶产品广告数据。
-    </div>
-    <div class="state-pills">
-      <span class="state-pill">🇺🇸 美国 · 花瓶系列（6条活动）</span>
-      <span class="state-pill">🇨🇦 加拿大 · 多条活动</span>
-      <span class="state-pill">花瓶 / Vase</span>
-    </div>
-    <div style="display:flex;gap:12px;justify-content:center">
-      <a href="https://app.marketplaceadpros.com/brands" target="_blank" class="state-btn">前往后台激活品牌 →</a>
-    </div>
-    <div style="margin-top:24px;padding:16px;background:var(--s2);border-radius:8px;text-align:left;font-size:12px;color:var(--muted)">
-      <strong style="color:var(--text)">集成信息</strong><br>
-      Integration ID: 0b837012 · Account IDs: 🇺🇸 beaccb8c &nbsp;|&nbsp; 🇨🇦 fc09e580<br>
-      品牌: Daillshop &nbsp;|&nbsp; Seller ID: A280K8SLG3VY2H &nbsp;|&nbsp; 状态: <span style="color:#f85149">DISABLED</span>
+  <div class="tab-panel active">
+    <div class="sec">核心指标</div>
+    <div class="kpi-grid" id="kpiGrid-daillshop"></div>
+    <div class="sec">分市场详情（近30天）</div>
+    <div class="market-grid" id="mktGrid-daillshop"></div>
+    <div style="margin-top:16px;padding:12px 16px;background:var(--s2);border-radius:8px;font-size:12px;color:var(--muted)">
+      数据来源：领星 ERP（US） &nbsp;·&nbsp; CA / MX / BR 数据需在 <a href="https://app.marketplaceadpros.com/brands" target="_blank" style="color:var(--blue)">MAP 后台</a>激活 Purvonnie 品牌后可用
     </div>
   </div>
 </div>
@@ -1032,6 +1025,12 @@ const markets = [
   {name:"🇨🇦 加拿大", cc:"CA", cls:"ca",  cur:"CAD", color:"#3fb950", spend:1260.57,  sales:15440.20,  imp:813390,   clicks:5497,  purch:519}
 ];
 
+const purvonnieMarkets = [
+  {name:"🇺🇸 美国", cc:"US", cls:"us", cur:"USD", color:"#e3a430",
+   spend:2015.78, sales:9887.52, acos:20.39, roas:4.91,
+   clicks:4194, imp:511158, purch:392},
+];
+
 const cofersetMarkets = [
   {name:"🇺🇸 美国",   cc:"US", cls:"us", cur:"USD", color:"#e3a430",
    spend:46114.08, sales:206375.82, acos:22.34, roas:4.48,
@@ -1137,7 +1136,7 @@ function switchBrand(brand, el) {
   const pillMkts = {
     duhouse: '🇺🇸 US &nbsp;🇬🇧 UK &nbsp;🇩🇪 DE &nbsp;🇨🇦 CA',
     coferset: '🇺🇸 US &nbsp;🇨🇦 CA',
-    daillshop: '🇺🇸 US &nbsp;🇨🇦 CA'
+    daillshop: '🇺🇸 US'
   };
   const pill = document.querySelector('.h-pill.active-chip');
   if (pill) pill.innerHTML = pillMkts[brand] || '';
@@ -1294,6 +1293,56 @@ function renderMarketCards(containerId) {
 }
 renderMarketCards('mktGrid');
 renderMarketCards('mktGrid2');
+
+// ══ Purvonnie KPI + Market Cards ══
+const pvKpiData = [
+  {lbl:'US 广告花费',    val:'$2,016 USD',   sub:'近30天',       color:'blue'},
+  {lbl:'US 广告销售',    val:'$9,888 USD',   sub:'ACOS 20.4%',  color:'green'},
+  {lbl:'综合 ROAS',      val:'4.91x',        sub:'销售÷花费',    color:'purple'},
+  {lbl:'总订单',         val:'392',          sub:'66条活动',     color:'orange'},
+];
+const pvGrid = document.getElementById('kpiGrid-daillshop');
+if (pvGrid) {
+  pvKpiData.forEach(k => {
+    pvGrid.insertAdjacentHTML('beforeend',`
+      <div class="kpi ${k.color}">
+        <div class="kpi-top"><div class="kpi-label">${k.lbl}</div></div>
+        <div class="kpi-val">${k.val}</div>
+        <div class="kpi-bot"><div class="kpi-sub">${k.sub}</div></div>
+      </div>
+    `);
+  });
+}
+const pvMktGrid = document.getElementById('mktGrid-daillshop');
+if (pvMktGrid) {
+  purvonnieMarkets.forEach(m => {
+    const ctr = m.clicks/m.imp*100;
+    const ac  = m.acos<15?'b-scale':m.acos<25?'b-keep':'b-lower';
+    const rc  = m.roas>8?'c-green':m.roas>4?'c-orange':'c-red';
+    pvMktGrid.insertAdjacentHTML('beforeend',`
+      <div class="mkt-card ${m.cls}">
+        <div class="mkt-head">
+          <div class="mkt-name" style="color:${m.color}">${m.name} <span style="font-size:11px;color:var(--muted);font-weight:400">${m.cc}</span></div>
+          <span class="badge ${ac}">ACOS ${m.acos.toFixed(1)}%</span>
+        </div>
+        <div class="mkt-rows">
+          <div class="mkt-row"><span class="mkt-row-l">广告花费</span><span class="mkt-row-r">${m.spend.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">广告销售额</span><span class="mkt-row-r">${m.sales.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">ROAS</span><span class="mkt-row-r ${rc}">${m.roas.toFixed(2)}x</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">CTR</span><span class="mkt-row-r">${ctr.toFixed(2)}%</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">购买次数</span><span class="mkt-row-r">${m.purch.toLocaleString()} 次</span></div>
+        </div>
+        <div class="mkt-bar-row">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--muted)">花费占比</span>
+            <span style="font-size:11px;font-weight:600;color:${m.color}">100%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" style="width:100%;background:${m.color}"></div></div>
+        </div>
+      </div>
+    `);
+  });
+}
 
 // ══ Coferset KPI + Market Cards ══
 const csKpiData = [
