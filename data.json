@@ -1,50 +1,50 @@
 {
-  "updated_at": "2026-06-09T01:13:59.021Z",
+  "updated_at": "2026-06-09T09:57:46.277Z",
   "report_date": "2026-05-10 - 2026-06-08",
   "markets": [
     {
       "market": "US",
       "currency": "USD",
-      "spend": 0,
-      "sales": 0,
-      "acos": 0,
-      "roas": 0,
-      "clicks": 0,
-      "impressions": 0,
-      "orders": 0
+      "spend": 27266.14,
+      "sales": 140814.25,
+      "acos": 19.36,
+      "roas": 5.16,
+      "clicks": 51049,
+      "impressions": 9967204,
+      "orders": 5657
     },
     {
       "market": "UK",
       "currency": "GBP",
-      "spend": 0,
-      "sales": 0,
-      "acos": 0,
-      "roas": 0,
-      "clicks": 0,
-      "impressions": 0,
-      "orders": 0
+      "spend": 4818.81,
+      "sales": 20855.27,
+      "acos": 23.11,
+      "roas": 4.33,
+      "clicks": 10513,
+      "impressions": 1879791,
+      "orders": 1357
     },
     {
       "market": "DE",
       "currency": "EUR",
-      "spend": 0,
-      "sales": 0,
-      "acos": 0,
-      "roas": 0,
-      "clicks": 0,
-      "impressions": 0,
-      "orders": 0
+      "spend": 1307.98,
+      "sales": 9598.57,
+      "acos": 13.63,
+      "roas": 7.34,
+      "clicks": 4002,
+      "impressions": 722553,
+      "orders": 427
     },
     {
       "market": "CA",
       "currency": "CAD",
-      "spend": 0,
-      "sales": 0,
-      "acos": 0,
-      "roas": 0,
-      "clicks": 0,
-      "impressions": 0,
-      "orders": 0
+      "spend": 1272.16,
+      "sales": 14836.28,
+      "acos": 8.57,
+      "roas": 11.66,
+      "clicks": 5522,
+      "impressions": 814940,
+      "orders": 499
     }
   ]
 }
