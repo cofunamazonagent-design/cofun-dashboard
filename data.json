@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-09T10:00:13.155Z",
+  "updated_at": "2026-06-09T10:02:31.484Z",
   "report_date": "2026-05-10 - 2026-06-08",
   "markets": [
     {
@@ -43,7 +43,7 @@
       "acos": 8.57,
       "roas": 11.66,
       "clicks": 5522,
-      "impressions": 814940,
+      "impressions": 814870,
       "orders": 499
     }
   ]
