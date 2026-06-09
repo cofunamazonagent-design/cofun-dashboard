@@ -1,16 +1,16 @@
 {
-  "updated_at": "2026-06-09T10:18:24.762Z",
+  "updated_at": "2026-06-09T10:25:35.809Z",
   "report_date": "2026-05-10 - 2026-06-08",
   "markets": [
     {
       "market": "US",
       "currency": "USD",
-      "spend": 27266.14,
+      "spend": 27265.64,
       "sales": 140858.23,
       "acos": 19.36,
       "roas": 5.17,
-      "clicks": 51049,
-      "impressions": 9966994,
+      "clicks": 51048,
+      "impressions": 9966709,
       "orders": 5659
     },
     {
