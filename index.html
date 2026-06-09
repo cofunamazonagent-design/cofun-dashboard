@@ -632,7 +632,7 @@ tbody td.c { text-align: center; }
     <span class="brand-dot coferset"></span>
     Coferset
     <span class="brand-mkts">🇺🇸 US &nbsp;🇨🇦 CA</span>
-    <span class="brand-badge pending">数据同步中</span>
+    <span class="brand-count">826条活动</span>
   </button>
   <button class="brand-tab" onclick="switchBrand('daillshop',this)">
     <span class="brand-dot daillshop"></span>
@@ -664,15 +664,15 @@ tbody td.c { text-align: center; }
   </div>
   <!-- Coferset alerts -->
   <div id="alerts-coferset" style="display:none;gap:10px;align-items:center">
-    <div class="alert-card orange">
-      <span class="alert-icon">⏳</span>
-      <span class="alert-label">数据同步中</span>
-      <span class="alert-desc">Coferset 集成今日创建，广告报告最多24小时后可用</span>
+    <div class="alert-card green">
+      <span class="alert-icon">📊</span>
+      <span class="alert-label">US: ACOS 22.3%</span>
+      <span class="alert-desc">花费 $46,114 / 销售额 $206,376 · 近30天，746条活动</span>
     </div>
     <div class="alert-card green">
-      <span class="alert-icon">📋</span>
-      <span class="alert-label">已识别100+活动</span>
-      <span class="alert-desc">🇺🇸 US：向日葵、绣球、尤加利、天竺葵等多品线</span>
+      <span class="alert-icon">🇨🇦</span>
+      <span class="alert-label">CA: ACOS 16.4%</span>
+      <span class="alert-desc">花费 $1,772 / 销售额 $10,816 · 近30天，80条活动</span>
     </div>
   </div>
   <!-- Daillshop alerts -->
@@ -793,33 +793,11 @@ tbody td.c { text-align: center; }
 
 <!-- ══ BRAND VIEW: Coferset ══ -->
 <div class="brand-view" id="brand-coferset">
-  <div class="state-card">
-    <div class="state-icon">⏳</div>
-    <div class="state-title">Coferset · 数据同步中</div>
-    <div class="state-desc">
-      Coferset 广告账户今日完成接入。系统正在拉取历史报告数据，最长需要 <strong>24小时</strong> 后方可查看完整的花费、销售、ACOS 等指标。<br><br>
-      我已识别到以下活跃市场和产品线：
-    </div>
-    <div class="state-pills">
-      <span class="state-pill">🇺🇸 美国 · 100+ 条活动</span>
-      <span class="state-pill">🇨🇦 加拿大 · 多条活动</span>
-      <span class="state-pill">向日葵 40pcs</span>
-      <span class="state-pill">手感绣球</span>
-      <span class="state-pill">尤加利小盆栽</span>
-      <span class="state-pill">天竺葵</span>
-      <span class="state-pill">皇妃玫瑰</span>
-      <span class="state-pill">假水尤加利</span>
-      <span class="state-pill">西洋绣球</span>
-      <span class="state-pill">波斯菊</span>
-    </div>
-    <div style="display:flex;gap:12px;justify-content:center">
-      <span class="state-btn warn">⏳ 明日再查看数据</span>
-    </div>
-    <div style="margin-top:24px;padding:16px;background:var(--s2);border-radius:8px;text-align:left;font-size:12px;color:var(--muted)">
-      <strong style="color:var(--text)">集成信息</strong><br>
-      Integration ID: c38f451d · Account IDs: 🇺🇸 b2836ba1 &nbsp;|&nbsp; 🇨🇦 cae99b08<br>
-      接入时间: 2026-06-08 &nbsp;|&nbsp; 品牌: Coferset &nbsp;|&nbsp; Seller ID: A16BQRBRF2J1Q0
-    </div>
+  <div class="tab-panel active">
+    <div class="sec">核心指标</div>
+    <div class="kpi-grid" id="kpiGrid-coferset"></div>
+    <div class="sec">分市场详情（近30天）</div>
+    <div class="market-grid" id="mktGrid-coferset"></div>
   </div>
 </div>
 
@@ -1052,6 +1030,15 @@ const markets = [
   {name:"🇬🇧 英国",  cc:"UK",  cls:"uk",  cur:"GBP", color:"#4493f8", spend:4814.16,  sales:21347.03,  imp:1897399,  clicks:10535, purch:1395},
   {name:"🇩🇪 德国",  cc:"DE",  cls:"de",  cur:"EUR", color:"#a371f7", spend:1315.35,  sales:9897.50,   imp:721688,   clicks:4031,  purch:439},
   {name:"🇨🇦 加拿大", cc:"CA", cls:"ca",  cur:"CAD", color:"#3fb950", spend:1260.57,  sales:15440.20,  imp:813390,   clicks:5497,  purch:519}
+];
+
+const cofersetMarkets = [
+  {name:"🇺🇸 美国",   cc:"US", cls:"us", cur:"USD", color:"#e3a430",
+   spend:46114.08, sales:206375.82, acos:22.34, roas:4.48,
+   clicks:85704, imp:27399132, purch:9530},
+  {name:"🇨🇦 加拿大", cc:"CA", cls:"ca", cur:"CAD", color:"#3fb950",
+   spend:1771.82,  sales:10815.54,  acos:16.38, roas:6.10,
+   clicks:5348,  imp:785466,   purch:474},
 ];
 
 const campaigns = [
@@ -1307,6 +1294,61 @@ function renderMarketCards(containerId) {
 }
 renderMarketCards('mktGrid');
 renderMarketCards('mktGrid2');
+
+// ══ Coferset KPI + Market Cards ══
+const csKpiData = [
+  {lbl:'US 广告花费',   val:'$46,114 USD',    sub:'近30天',            color:'blue'},
+  {lbl:'US 广告销售',   val:'$206,376 USD',   sub:'ACOS 22.3%',       color:'green'},
+  {lbl:'CA 广告花费',   val:'$1,772 CAD',     sub:'近30天',            color:'orange'},
+  {lbl:'CA 广告销售',   val:'$10,816 CAD',    sub:'ACOS 16.4%',       color:'teal'},
+  {lbl:'总订单 (US+CA)',val:'10,004',          sub:'US 9,530 · CA 474', color:'purple'},
+  {lbl:'总活动数',      val:'826',             sub:'US 746 · CA 80',   color:'blue'},
+];
+const csGrid = document.getElementById('kpiGrid-coferset');
+if (csGrid) {
+  csKpiData.forEach(k => {
+    csGrid.insertAdjacentHTML('beforeend',`
+      <div class="kpi ${k.color}">
+        <div class="kpi-top"><div class="kpi-label">${k.lbl}</div></div>
+        <div class="kpi-val">${k.val}</div>
+        <div class="kpi-bot"><div class="kpi-sub">${k.sub}</div></div>
+      </div>
+    `);
+  });
+}
+
+const csMktTotal = cofersetMarkets.reduce((s,m)=>s+m.spend,0);
+const csMktGrid = document.getElementById('mktGrid-coferset');
+if (csMktGrid) {
+  cofersetMarkets.forEach(m => {
+    const ctr = m.clicks/m.imp*100;
+    const ac  = m.acos<15?'b-scale':m.acos<25?'b-keep':'b-lower';
+    const rc  = m.roas>8?'c-green':m.roas>4?'c-orange':'c-red';
+    const pct = m.spend/csMktTotal*100;
+    csMktGrid.insertAdjacentHTML('beforeend',`
+      <div class="mkt-card ${m.cls}">
+        <div class="mkt-head">
+          <div class="mkt-name" style="color:${m.color}">${m.name} <span style="font-size:11px;color:var(--muted);font-weight:400">${m.cc}</span></div>
+          <span class="badge ${ac}">ACOS ${m.acos.toFixed(1)}%</span>
+        </div>
+        <div class="mkt-rows">
+          <div class="mkt-row"><span class="mkt-row-l">广告花费</span><span class="mkt-row-r">${m.spend.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">广告销售额</span><span class="mkt-row-r">${m.sales.toLocaleString()} ${m.cur}</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">ROAS</span><span class="mkt-row-r ${rc}">${m.roas.toFixed(2)}x</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">CTR</span><span class="mkt-row-r">${ctr.toFixed(2)}%</span></div>
+          <div class="mkt-row"><span class="mkt-row-l">购买次数</span><span class="mkt-row-r">${m.purch.toLocaleString()} 次</span></div>
+        </div>
+        <div class="mkt-bar-row">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--muted)">花费占比</span>
+            <span style="font-size:11px;font-weight:600;color:${m.color}">${pct.toFixed(1)}%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+        </div>
+      </div>
+    `);
+  });
+}
 
 // ══════════════════════════════════════════════════
 // CAMPAIGN TABLE
