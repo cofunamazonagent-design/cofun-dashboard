@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-09T01:00:50.681Z",
+  "updated_at": "2026-06-09T01:11:57.982Z",
   "report_date": "2026-05-10 - 2026-06-08",
   "markets": [
     {
@@ -8,6 +8,7 @@
       "spend": 0,
       "sales": 0,
       "acos": 0,
+      "roas": 0,
       "clicks": 0,
       "impressions": 0,
       "orders": 0
@@ -18,6 +19,7 @@
       "spend": 0,
       "sales": 0,
       "acos": 0,
+      "roas": 0,
       "clicks": 0,
       "impressions": 0,
       "orders": 0
@@ -28,6 +30,7 @@
       "spend": 0,
       "sales": 0,
       "acos": 0,
+      "roas": 0,
       "clicks": 0,
       "impressions": 0,
       "orders": 0
@@ -38,6 +41,7 @@
       "spend": 0,
       "sales": 0,
       "acos": 0,
+      "roas": 0,
       "clicks": 0,
       "impressions": 0,
       "orders": 0
